@@ -1,0 +1,1215 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "f0da0c07",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "h00",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "Osnabrück University - Computer Vision (Winter Term 2021/22) - Prof. Dr.-Ing. G. Heidemann, Ulf Krumnack, Axel Schaffland"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1a3989bb",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "h01",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "# Exercise Sheet 02: Image Enhancement"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bc36c512",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "h02",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "## Introduction\n",
+    "\n",
+    "This week's sheet should be solved and handed in before **Tuesday, November 16, 2021, 2:00pm**. If you need help (and Google and other resources were not enough), feel free to contact your groups' designated tutor or whomever of us you run into first. Please upload your results to your group's Stud.IP folder."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e79c31c6",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "math-euclid",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "## Assignment 0: Math recap (Euclidean Space) [0 Points]\n",
+    "\n",
+    "This exercise is supposed to be very easy, does not give any points, and is voluntary.\n",
+    "There will be a similar exercise on every following sheet.\n",
+    "It is intended to revise some basic mathematical notions that are assumed throughout this class and to allow you to check if you are comfortable with them.\n",
+    "Usually you should have no problem to answer these questions offhand, but if you feel unsure, this is a good time to look them up again. You are always welcome to discuss questions with the tutors or in the practice session.\n",
+    "Also, if you have a (math) topic you would like to recap, please let us know."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d38a6736",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "math-euclid-q1",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "**a)** What is a *Euclidean space*? What is the *Cartesian plane*? How are they usually denoted? How to write points in these spaces?"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e2b48c25",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "math-euclid-a1",
+     "locked": false,
+     "points": 0,
+     "schema_version": 3,
+     "solution": true
+    },
+    "solution": true
+   },
+   "source": [
+    "A *Euclidean space* is a space in which the axioms of Euclidean geometry hold. There is one such space for each dimension $n$. One usually uses Cartesian coordinates, i.e. tuples of real numbers, to refer to points in these spaces, so the *Cartesian plane* is the two-dimensional Eucliden space modeled by pairs of real coordinates. The $n$-dimensional Euclidean space is usually denoted by\n",
+    "$$\\mathbb{R}^n = \\underbrace{\\mathbb{R}\\times\\ldots\\times\\mathbb{R}}_{n\\text{-times}}$$\n",
+    "(sometimes also $\\mathbf{R}^n$). Points in that space are hence denoted by $n$-tuples of real numbers,\n",
+    "$$\\vec{x}=\\mathbf{x} = (x_1,\\ldots,x_n)\\in\\mathbb{R}^n$$"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5528c0f6",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "math-euclid-q2",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "**b)** What is the *norm* of a vector in a Euclidean space? How to *add* and *substract* two vectors? How is the *Euclidean distance* defined? Are there other ways to measure distances?"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "065b78b0",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "math-euclid-a2",
+     "locked": false,
+     "points": 0,
+     "schema_version": 3,
+     "solution": true
+    },
+    "solution": true
+   },
+   "source": [
+    "The *(Euclidean) norm* of a vector\n",
+    "\n",
+    "$$\\|\\vec{x}\\| = \\sqrt{x_1^2+\\ldots+x_n^2}$$\n",
+    "\n",
+    "it can be interpreted as the *length* of the vector. The sum of two vectors is defined as\n",
+    "$$\\vec{x}+\\vec{y} = \\begin{pmatrix} x_1 \\\\ \\vdots \\\\ x_n\\end{pmatrix}+\n",
+    "\\begin{pmatrix} y_1 \\\\ \\vdots \\\\ y_n\\end{pmatrix} =\n",
+    "\\begin{pmatrix} x_1+y_1 \\\\ \\vdots \\\\ x_n+y_n\\end{pmatrix}$$\n",
+    "and analogously the difference is\n",
+    "$$\\vec{x}-\\vec{y} = \\begin{pmatrix} x_1 \\\\ \\vdots \\\\ x_n\\end{pmatrix}-\n",
+    "\\begin{pmatrix} y_1 \\\\ \\vdots \\\\ y_n\\end{pmatrix} =\n",
+    "\\begin{pmatrix} x_1-y_1 \\\\ \\vdots \\\\ x_n-y_n\\end{pmatrix}$$\n",
+    "The euclidean distance is defined as the norm of the difference of two vectors\n",
+    "\n",
+    "$$d(\\vec{x},\\vec{y}) = \\|\\vec{x}-\\vec{y}\\| = \\sqrt{(x_1-y_1)^2+\\ldots+(x_n-y_n)^2} = \\left(\\sum_{i=1}^n (x_i-y_i)^{2}\\right)^{\\frac{1}{2}}$$\n",
+    "\n",
+    "(remember the Pythagorean theorem). Be replacing 2 by $p$ one gets the $p$-norm instead of the Euclidean norm, from which one then gets the $p$-metric to measure distances. There are even more distance measures."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5258a1ba",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "math-euclid-q3",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "**c)** What is the (standard) *scalar product* of two vectors? How is it related to the length and angle between these vectors? Name some use cases."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "338a2cf3",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "math-euclid-a3",
+     "locked": false,
+     "points": 0,
+     "schema_version": 3,
+     "solution": true
+    },
+    "solution": true
+   },
+   "source": [
+    "The scalar product of two vectors $\\vec{x}$ and $\\vec{y}$ is defined as\n",
+    "\n",
+    "$$ \\vec{x}\\cdot\\vec{y} = \\langle\\vec{x},\\vec{y}\\rangle = x_1y_1+\\ldots+x_ny_n = \\sum_{i=1}^{n}x_iy_i$$\n",
+    "\n",
+    "On a geometric level the scalar product can be computed as\n",
+    "\n",
+    "$$\\vec{x}\\cdot\\vec{y} = \\|\\vec{x}\\| \\|\\vec{y}\\| \\cos(\\sphericalangle(\\vec{x},\\vec{y}))$$\n",
+    "\n",
+    "where $\\sphericalangle(\\vec{x},\\vec{y})$ denotes the angle between vectors $\\vec{x}$ and $\\vec{y}$. The scalar product is sometimes used as a similarity measure, which will be $0$ for orthogonal (i.e. unrelated) vectors."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a805532f",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "contrast-theory",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "## Assignment 1: Contrast enhancement [5 Points]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3c945e11",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "contrast-theory-q1",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### a) Image Contrast\n",
+    "\n",
+    "Describe the concept of contrast in your own words and introduce different ways to measure it. How can low contrast be caused and when is this a problem (and when not)? What can be done to improve contrast?"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3c194758",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "contrast-theory-a1",
+     "locked": false,
+     "points": 1,
+     "schema_version": 3,
+     "solution": true
+    },
+    "solution": "shown"
+   },
+   "source": [
+    "Contrast measures the difference in luminance within an image. While global contrast takes the minimal and maximal gray values of an image into consideration, local contrast compares a pixel to its neigbors.\n",
+    "\n",
+    "A low global contrast can result from errors or bad conditions during image capture (under- and overexposure). It is clearly visible in a histogram, showing that only a certain interval of the available gray values is used. Small contrast causes problems for the human visual system, making it hard to discover details in the picture. For computer systems a low contrast is usually not a problem. Hence contrast enhancement is usually applied when images are prepared for human inspection.\n",
+    "\n",
+    "Low contrast can be improved by making differences of gray values more prominent. This can be done on a global level by stretching the histogram, or on a local level to emphasize details in the image."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ead9bfad",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "contrast-theory-q2",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### b) Histogram equalization and entropy\n",
+    "\n",
+    "How does histogram equalization work? What is entropy and how is it related to histogram equalization? For your answer focus on the (conceptually simpler) continuous case."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "dc2f4bb1",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "contrast-theory-a2",
+     "locked": false,
+     "points": 2,
+     "schema_version": 3,
+     "solution": true
+    },
+    "solution": "shown"
+   },
+   "source": [
+    "A histogram records the distribution of image pixels over the availabe gray values. The goal of histogram equalization is to change the gray values of the image, so that frequent gray values get more space in the histogram while rare gray values are stuffed more densely. The ultimate goal of histogram equalization is to achive an image in which all gray values occur with the same frequency.\n",
+    "\n",
+    "Assuming a continuous image (continuous coordinates, continuous gray values), the histogram $H_g$ is the density of the distribution of the gray values in the image $g:C\\to V$ (mapping coordinates from $C$ to gray values in $V = [0,m]$ with $m$ being the maximal gray value, i.e. white). Histogram equalization is achieved using a transfer function $T:V\\to V$, mapping gray values to gray values. The condition to be fulfilled is, that the density $H_{T\\circ g}$ of the resulting image $T\\circ g$ is constant (and sums up to 1). Such a transfer function is given by the cummulative density\n",
+    "\n",
+    "$$T(v) := \\int_0^v H_g(x) \\mathrm{d}x$$\n",
+    "\n",
+    "Entropy can be considered as a measure of the disorder of a system. The higher the entropy the harder it is to predict the behavior. If all gray values occur with the same probability the system has maximal entropy. Hence histogram equalization maximizes the entropy of the gray values in an image."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "59b98a33",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "contrast-theory-q3",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### c) Discrete histogram equalization\n",
+    "\n",
+    "What problems occur when considering discrete images (i.e. with discrete coordinates and a finite number of gray levels)? Explain the tables on the lecture slides (CV-04 slides 22/23)."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "cf052d35",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "contrast-theory-a3",
+     "locked": false,
+     "points": 2,
+     "schema_version": 3,
+     "solution": true
+    },
+    "solution": "shown"
+   },
+   "source": [
+    "In the discrete case, i.e. the case we usually deal with in digital image processiong, an optimal transfer function can usually not be achieved (as it is not possible to continuously deform the histogram). This problem is explained by the tables on (CV-04 slides 22/23): it considers an 3-bit image (i.e. $2^3 = 8$ different gray values) with 1.000 pixels. The histogram values are shown in the second line of the table (\"Frequency\") while the third line (\"H(g)\") shows the normalized histogram, i.e. the probability distribution of gray values. The next line displays the accumulated probabilites, which are used to compute transfer function (defined above the table, in this case $N_g=8$). The next line (\"Gray value\") shows the values computed by the transfer function (i.e. gray value 0 in the original image is mapped to $0.4$, gray value 1 is mapped to $1.6$, etc.). As we consider the discrete case, only integer values are allowed here, so these values are finally ceiled in the last line of the table. On (CV-04 slide 23) the (normalized) histogram of the resulting image is shown below the table. One can see that:\n",
+    "* The gray values are more equally distributed over the range of possible values (this is what histogram equalization tries to achieve)\n",
+    "* However, some gray values (2, 3, and 5) are no longer used in the resulting image (a result of the discreteness)\n",
+    "* The entropy has increased, but does not reach the maximal possible value of $3$ (again due to discreteness)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "08286208",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "contrast-computation",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "## Assignment 2: Computing Contrast and Entropy [5 Points]\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d8b4b77a",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "contrast-computation-q1",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### a) Computing contrast\n",
+    "\n",
+    "Provide functions to compute the local contrast, global contrast, and entropy of an image."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "19c8e7ef",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "contrast-computation-a1",
+     "locked": false,
+     "points": 1,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import numpy as np\n",
+    "from imageio import imread\n",
+    "import matplotlib.pyplot as plt\n",
+    "plt.rcParams['image.cmap'] = 'gray'\n",
+    "\n",
+    "def global_contrast(img, value_range=None):\n",
+    "    \"\"\"\n",
+    "    Compute the global contrast for a given image.\n",
+    "    Args:\n",
+    "        img (ndarray): The grayscale image to compute the contrast for.\n",
+    "        value_range (tuple): The minimum and maximum values of the gray scale.\n",
+    "    \n",
+    "    Returns:\n",
+    "        contrast (float): The global contrast of the image. \n",
+    "    \"\"\"\n",
+    "\n",
+    "    # determine range: simplified, just checks for uint8 \n",
+    "    if value_range is None:\n",
+    "        value_range = (0, 255) if img.dtype == np.uint8 else (0., 1.)\n",
+    "\n",
+    "    # BEGIN SOLUTION\n",
+    "    contrast = (img.max() - img.min()) / (value_range[1] - value_range[0])\n",
+    "    # END SOLUTION\n",
+    "    # contrast = ...\n",
+    "\n",
+    "    return contrast\n",
+    "\n",
+    "img = imread('images/dark.png')\n",
+    "plt.title(\"Image global contrast: {:.4f} (min={}, max={})\".format(global_contrast(img), img.min(), img.max()))\n",
+    "plt.imshow(img, vmin=0, vmax=255)\n",
+    "plt.show()\n",
+    "\n",
+    "plt.hist(img.flatten(), 256, (0, 255))\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "219dc694",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "contrast-computation-a2",
+     "locked": false,
+     "points": 1,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "from imageio import imread\n",
+    "\n",
+    "def local_contrast(img):\n",
+    "    \"\"\"\n",
+    "    Compute the local contrast for a given image.\n",
+    "    Args:\n",
+    "        img (ndarray): The grayscale image to compute the contrast for.\n",
+    "    \n",
+    "    Returns:\n",
+    "        contrast (float): The local contrast of the image. \n",
+    "    \"\"\"\n",
+    "\n",
+    "    # BEGIN SOLUTION\n",
+    "    avg_diff = 0\n",
+    "    for (x,y) in np.ndindex(img.shape):\n",
+    "        neighbors = 0\n",
+    "        neighbors += img[x - 1, y] if x       > 0            else img[x, y]\n",
+    "        neighbors += img[x + 1, y] if (x + 1) < img.shape[0] else img[x, y]\n",
+    "        neighbors += img[x, y - 1] if y       > 0            else img[x, y]\n",
+    "        neighbors += img[x, y + 1] if (y + 1) < img.shape[1] else img[x, y]\n",
+    "        \n",
+    "        avg_diff += abs(img[x,y] - (0.25 * neighbors))\n",
+    "    contrast = avg_diff / img.size\n",
+    "\n",
+    "    return contrast\n",
+    "\n",
+    "# alternative solution (using convolution):\n",
+    "from scipy.ndimage.filters import convolve\n",
+    "def local_contrast2(img):\n",
+    "    return np.sum(np.abs(convolve(img.astype(float), [[0, -1/4, 0], [-1/4, 1, -1/4], [0, -1/4, 0]]))) / img.size\n",
+    "\n",
+    "# END SOLUTION\n",
+    "\n",
+    "\n",
+    "img = imread('images/dark.png')\n",
+    "plt.title(\"Image local contrast: {:.4f}\".format(local_contrast2(img)))\n",
+    "plt.imshow(img, vmin=0, vmax=255)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "add1302e",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "contrast-computation-a3",
+     "locked": false,
+     "points": 1,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import numpy as np\n",
+    "import math\n",
+    "from imageio import imread\n",
+    "import scipy.stats\n",
+    "\n",
+    "def entropy(img):\n",
+    "    \"\"\"\n",
+    "    Compute the entropy for a given image.\n",
+    "    Args:\n",
+    "        img (ndarray): The grayscale image to compute the entropy for.\n",
+    "    \n",
+    "    Returns:\n",
+    "        img_entropy (float): The entropy of the image. \n",
+    "    \"\"\"\n",
+    "    # BEGIN SOLUTION\n",
+    "    hist, _ = np.histogram(img, 256, (0, 255))\n",
+    "    hist_norm = hist / hist.sum()\n",
+    "    log_hist_norm = [math.log2(x) if x > 0 else 0 for x in hist_norm]\n",
+    "    img_entropy = -hist_norm.dot(log_hist_norm)\n",
+    "    return img_entropy\n",
+    "    # END SOLUTION\n",
+    "\n",
+    "img = imread('images/dark.png')\n",
+    "plt.title(\"Image Entropy value: {:.4f}\".format(entropy(img)))\n",
+    "plt.imshow(img, vmin=0, vmax=255)\n",
+    "plt.show()\n",
+    "\n",
+    "plt.hist(img.flatten(), 256, (0, 255))\n",
+    "plt.show()\n",
+    "\n",
+    "assert math.isclose(entropy(img), scipy.stats.entropy(np.unique(img.flat, return_counts=True)[1], base=2))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0be71a73",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "contrast-computation-q4",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### b) Example images\n",
+    "\n",
+    "* construct an (artificial) image with high global contrast but low local contrast\n",
+    "* construct an (artificial) image with low global constrast but high local contrast\n",
+    "* construct an (artificial) image with maximal entropy but low local contrast"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "db587aa5",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "contrast-computation-a4",
+     "locked": false,
+     "points": 2,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "def image_info(img):\n",
+    "    \"\"\" Displays an image, local and global contrast, and the entropy\n",
+    "    \n",
+    "    Args:\n",
+    "        img (ndarray): Image which is displayed and statics are computed for.\n",
+    "        \n",
+    "    \"\"\"\n",
+    "    info = \"global contrast: {:.4f}, local contrast: {:.4f}, entropy: {:.4f}\"\n",
+    "    plt.title(info.format(global_contrast(img), local_contrast(img), entropy(img)))\n",
+    "    plt.imshow(img, vmin=0, vmax=255)\n",
+    "    plt.show()\n",
+    "\n",
+    "\n",
+    "img1 = np.zeros((256, 256),np.uint8)\n",
+    "# BEGIN SOLUTION\n",
+    "img1[0, 0] = 255\n",
+    "# END SOLUTION\n",
+    "image_info(img1)\n",
+    "\n",
+    "\n",
+    "img2 = np.zeros((256, 256),np.uint8)\n",
+    "# BEGIN SOLUTION\n",
+    "# checkerboard image consisting of ones and zeros \n",
+    "img2[::2, 1::2] = 1\n",
+    "img2[1::2, ::2] = 1\n",
+    "# END SOLUTION\n",
+    "image_info(img2)\n",
+    "\n",
+    "\n",
+    "img3 = np.zeros((256, 256),np.uint8)\n",
+    "# BEGIN SOLUTION\n",
+    "for i in range(256):\n",
+    "    img3[i, :] = i\n",
+    "# END SOLUTION\n",
+    "image_info(img3)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "aee8e12a",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "ahe",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "## Assignment 3: Adaptive Histogram Equalization (AHE) [5 Points]\n",
+    "\n",
+    "We have uploaded the original article on Contrast Limited Adaptive Histogram Equalization to StudIP [Zuiderveld, 1994]. You may use it as a base to answer this exercise."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "10e168b8",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "ahe-q1",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### a) Adaptive Histogram Equalization (AHE)\n",
+    "\n",
+    "Describe in your own words the idea of AHE. Why was it introduced and what are its main drawbacks?"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "487622f2",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "ahe-a1",
+     "locked": false,
+     "points": 1,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "source": [
+    "While the standard histogram equalization aims at equalizing the histogram for the full image, adaptive histogram equalization seeks to equalize the histogram locally. In the extreme case, one seeks for an equalized histogram for each image position.\n",
+    "\n",
+    "AHE is motivated from the observation, that global histogram equalization may leave local structures with relatively low contrast. \n",
+    "\n",
+    "A drawback of AHE results from its consequent introduction of contrast at all regions of the image. The result is that noise in homogenous regions of the image becomes extremely dominant and distracts attention from the actual structures."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5495d7e6",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "ahe-q2",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### b) Contrast Limited Adaptive Histogram Equalization (CLAHE)\n",
+    "\n",
+    "Describe in your own words the idea of CLAHE. Why was it introduced and how does it work? "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "73918e0a",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "ahe-a2",
+     "locked": false,
+     "points": 1,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "source": [
+    "CLAHE aims at overcoming the problems of AHE by reducing the contrast enhancement in homogenous regions. Homogenous regions are detected by high peaks in the local histogram. Such peaks are eliminated by clipping histogram bins over a given threshold and distributing them equally over the histogram. Then this modified histogram is used as a base for computing the transfer function."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d40682ae",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "ahe-q3",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### c) Computation of AHE\n",
+    "\n",
+    "How can AHE be implemented efficiently? Explain how the interpolation scheme works, why it is a valid approximation, and why it improves the runtime? Can you think of another way to compute AHE efficiently?"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "941824f5",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "ahe-a3",
+     "locked": false,
+     "points": 2,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "source": [
+    "Instead of determining the local histogram for the neighborhood of each pixel, one divides the image into grid of rectangular contextual regions and computes a transfer function for each of these regions based on the respective histogram. Then indvidual pixel values are computed by applying a bilinear interpolation of the four neighboring contextual regions, taking the respective region centers as reference points.\n",
+    "\n",
+    "Another approach is to use a sliding window, that holds the real histogram of the neighborhood of a pixel. The transfer function for this pixel is computed from that histogram. Then the window is shifted by one pixel, substracting just the \"lost\" row from the histogram and adding the \"new\" row. This reduces the time required for computing the histogram."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a92492d3",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "ahe-q4",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### d) Applying AHE and CLAHE\n",
+    "\n",
+    "Lookup functions for computing HE, AHE and CLAHE in the module `skimage.exposure` and apply them to the image `canada.png`. Compare your results to the lecture slides (CV-04, slide 31)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "98a30c82",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "ahe-a4",
+     "locked": false,
+     "points": 1,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "# BEGIN SOLUTION\n",
+    "from skimage.exposure import equalize_hist, equalize_adapthist\n",
+    "# END SOLUTION\n",
+    "from imageio import imread\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "img = imread('images/canada.png', pilmode='L')\n",
+    "\n",
+    "img_he = img # CHANGE THIS\n",
+    "img_ahe = img # CHANGE THIS\n",
+    "img_clahe = img # CHANGE THIS\n",
+    "# BEGIN SOLUTION\n",
+    "img_he = equalize_hist(img)\n",
+    "# equalize_adapthist clip_limit is broken. Works only for interval ]0,1[. Negative clip_limit for AHE\n",
+    "img_ahe = equalize_adapthist(img, clip_limit=-1)\n",
+    "img_clahe = equalize_adapthist(img, clip_limit=.03)\n",
+    "# END SOLUTION\n",
+    "\n",
+    "plt.figure(figsize=(12, 15))\n",
+    "plt.subplot(4,2,1)\n",
+    "plt.title(\"Original Image\")\n",
+    "plt.imshow(img)\n",
+    "plt.subplot(4,2,2)\n",
+    "plt.title(\"entropy={:.4f}\".format(entropy(img)))\n",
+    "plt.hist(img.flatten(), 256, (0, 255))\n",
+    "\n",
+    "plt.subplot(4,2,3)\n",
+    "plt.title(\"HE\")\n",
+    "plt.imshow(img_he)\n",
+    "plt.subplot(4,2,4)\n",
+    "plt.title(\"entropy={:.4f}\".format(entropy(img_he)))\n",
+    "plt.hist(img_he.flatten(), 256, (0, 1))\n",
+    "\n",
+    "plt.subplot(4,2,5)\n",
+    "plt.title(\"AHE\")\n",
+    "plt.imshow(img_ahe)\n",
+    "plt.subplot(4,2,6)\n",
+    "plt.title(\"entropy={:.4f}\".format(entropy(img_ahe)))\n",
+    "plt.hist(img_ahe.flatten(), 256, (0, 1))\n",
+    "\n",
+    "plt.subplot(4,2,7)\n",
+    "plt.title(\"CLAHE\")\n",
+    "plt.imshow(img_clahe)\n",
+    "plt.subplot(4,2,8)\n",
+    "plt.title(\"entropy={:.4f}\".format(entropy(img_clahe)))\n",
+    "plt.hist(img_clahe.flatten(), 256, (0, 1))\n",
+    "\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "52a8cb62",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "cell-09e6844b0fbe4157",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "## Assignment 4: Colormaps[5 Points]\n",
+    "\n",
+    "Colormaps can be used to map a grayscale image to a pseudo color image for contrast enhancment for human viewing. Three non-monotonic functions are applied to map a gray value to each of the three color channels of the output image.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2e3a659e",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "cell-34220895465157fd",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### a) Describe the following three colormap classes in one sentence each:\n",
+    "\n",
+    "* Sequential\n",
+    "* Diverging\n",
+    "* Qualitative\n",
+    "\n",
+    "You may have a look at the matplotlib documentation."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "66a8fa27",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "cell-1417a9c18627ceb3",
+     "locked": false,
+     "points": 1.5,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "source": [
+    "* Sequential: Change in lightness and often saturation of color incrementally, often using a single hue; should be used for representing information that has ordering.\n",
+    "* Diverging: Change in lightness and possibly saturation of two different colors that meet in the middle at an unsaturated color; should be used when the information being plotted has a critical middle value, such as topography or when the data deviates around zero.\n",
+    "* Qualitative: Often are miscellaneous colors; should be used to represent information which does not have ordering or relationships.\n",
+    "\n",
+    "Taken from: https://matplotlib.org/3.1.1/tutorials/colors/colormaps.html"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "86d79022",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "cell-8bf315d36d8c9d90",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "For each of the above colormap classes give one example and display the red, green, and blue curves like on (CV-04, slide 35):"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "d5c98c19",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "cell-3ed2522128754c63",
+     "locked": false,
+     "points": 1.5,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "import math\n",
+    "\n",
+    "color = []\n",
+    "\n",
+    "# The following is just for demonstration: replace and extend by your own examples\n",
+    "color.append(np.asarray((lambda x: np.sin(x/256*2*np.pi)*128+128, \n",
+    "              lambda x: (x//16) * 16,\n",
+    "              lambda x: (2*x) % 256)))\n",
+    "# BEGIN SOLUTION\n",
+    "# Credit to Philipp Thölke, Tula Böschen and Emilia Arens for this great solution!\n",
+    "\n",
+    "# sequential color map\n",
+    "color.append(np.asarray((lambda x: ((x / 256) ** 2) * 255, \n",
+    "              lambda x: x,\n",
+    "              lambda x: ((x / 256) ** 0.5) * 255)))\n",
+    "\n",
+    "# diverging color map\n",
+    "color.append(np.asarray((lambda x: 256 - (((abs(128 - x) / 128) ** (0.3 + 1 / (1 + np.exp(-(128 - x) / 100)))) * 256), \n",
+    "              lambda x: 256 - (((abs(128 - x) / 128) ** (0.9 + 1 / (1 + np.exp(-(128 - x) / 75)))) * 256),\n",
+    "              lambda x: 256 - (((abs(128 - x) / 128) ** (0.5 + 1 / (1 + np.exp(-(128 - x) / 5)))) * 256))))\n",
+    "\n",
+    "\n",
+    "# Credit to Franca Boße, Rena Birner and Rodrigo Oyarzo Baez for this great solution!\n",
+    "\n",
+    "# qualitative colormap\n",
+    "color.append(np.asarray((lambda x: ((256-x)//64) * 64, \n",
+    "                         lambda x: (0.5*x+192) % 256, \n",
+    "                         lambda x: (x//64) * 64)))\n",
+    "\n",
+    "# END SOLUTION\n",
+    "\n",
+    "gray = np.arange(0,256)\n",
+    "a = np.tile(np.arange(256),(256,1))\n",
+    "\n",
+    "plt.figure(figsize=(12,12))\n",
+    "for i in range(len(color)):\n",
+    "    plt.subplot((len(color)//2)+1,2,i+1)\n",
+    "    plt.plot(gray, color[i][0](gray), 'red')\n",
+    "    plt.plot(gray, color[i][1](gray), 'green')\n",
+    "    plt.plot(gray, color[i][2](gray), 'blue')\n",
+    "    plt.imshow(np.stack([color[i][0](a),color[i][1](a),color[i][2](a)],axis=2)/256, origin='lower')\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5c0e8422",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "cell-843941a0c5389bbc",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### b) Implement Cube Helix colormapping \n",
+    "Generate a LookUp table with $256 \\times 3$ entries describing the color values for all gray values beginning with black (0) up to white (255). Use the given parameters and use the following formula to compute an RGB value from a gray value $g$:\n",
+    "$$ \\begin{pmatrix}R \\\\ G \\\\ B\\end{pmatrix} =  g ^ \\gamma + a \\begin{pmatrix}0.14861 & + 1.78277 \\\\\n",
+    "-0.29227 & -0.90649 \\\\ +1.97294 & 0\\end{pmatrix} \\begin{pmatrix}\\cos \\theta \\\\ \\sin \\theta\\end{pmatrix}$$\n",
+    "with $\\theta = 2 \\pi (\\frac{\\text{start_color }}{3} + \\text{rotations}\\cdot g)$ and $ a = \\frac{\\gamma\\cdot\\text{hue}\\cdot g\\cdot( 1 - \\gamma g)}{2}$ (with 'start_color', 'rotations' and 'hue' being parameters describing the form of the helix, and $\\gamma$ being the usual $\\gamma$-factor).\n",
+    "\n",
+    "Remember that this formula is for values between $0$ and $1$.\n",
+    "For more information you may refer to http://astron-soc.in/bulletin/11June/289392011.pdf"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "7c011a4c",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "cell-54c16bafb9c032c8",
+     "locked": false,
+     "points": 2,
+     "schema_version": 3,
+     "solution": true
+    }
+   },
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import numpy as np\n",
+    "from imageio import imread\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "start_color = 1\n",
+    "rotations = 3\n",
+    "hue = 2\n",
+    "gamma = 1\n",
+    "m = np.mat([[-.14861, 1.78277],\n",
+    "            [-.29227, -.90649],\n",
+    "            [1.97294, 0]])\n",
+    "\n",
+    "def generate_cube_helix_lookup_table():\n",
+    "    \"\"\"Generate a lookup table for cube helix color mapping.\n",
+    "    \n",
+    "    Return: \n",
+    "        lookup_table (ndarray): The cube helix color map. (256,3)\n",
+    "    \"\"\"\n",
+    "    lookup_table = np.empty((256,3), float)\n",
+    "    \n",
+    "    for i in np.arange(256):\n",
+    "        # BEGIN SOLUTION\n",
+    "        j = i/256\n",
+    "        lambda_y = j ** gamma\n",
+    "        theta = 2 * np.pi * (start_color/3 + rotations * j)\n",
+    "        a = hue * lambda_y * (1 - lambda_y) / 2\n",
+    "        lookup_table[i, :] = np.mat([j,j,j]) + (a * m * \\\n",
+    "                    np.mat([np.cos(theta), np.sin(theta)]).T).T\n",
+    "    \n",
+    "        # END SOLUTION\n",
+    "    return lookup_table\n",
+    "\n",
+    "\n",
+    "def apply_colormap(img, loookup_table):\n",
+    "    \"\"\"Apply a colormap to an image\n",
+    "    \n",
+    "    Args:\n",
+    "        img (ndarray): The image (ndim=2).\n",
+    "        lookup_table (ndarray): The lookup table (shape=(256,3)).\n",
+    "        \n",
+    "    Return:\n",
+    "        color_img (ndarray): The color image resulting from application of the colormap.\n",
+    "    \"\"\"\n",
+    "    color_img = loookup_table[img]\n",
+    "    color_img[color_img>1] = 1.\n",
+    "    color_img[color_img<0] = 0.\n",
+    "    return color_img\n",
+    "\n",
+    "img = imread('images/lung.png', pilmode='L')\n",
+    "lookup_table = generate_cube_helix_lookup_table()\n",
+    "img2 = apply_colormap(img, lookup_table)\n",
+    "\n",
+    "plt.figure(figsize=(20,10))\n",
+    "plt.subplot(1,2,1); plt.imshow(img, cmap = 'gray'); plt.axis('off')\n",
+    "plt.subplot(1,2,2); plt.imshow(img2); plt.axis('off')\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a48ea3ad",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "cell-ded9fdb266f368d9",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false
+    }
+   },
+   "source": [
+    "### Jet Colormap [Bonus]\n",
+    "\n",
+    "Explain why the Jet Colormap (used, for example, as standard colormap in matlab), is problematic compared to Cube Helix. Think of perceived luminance and black and white printing."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "8bcc8c88",
+   "metadata": {
+    "nbgrader": {
+     "grade": false,
+     "grade_id": "cell-23b13d50c5999752",
+     "locked": true,
+     "schema_version": 3,
+     "solution": false,
+     "task": false
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# This code was taken from \n",
+    "# https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/\n",
+    "\n",
+    "def grayify_cmap(cmap):\n",
+    "    \"\"\"Return a grayscale version of the colormap\n",
+    "    \n",
+    "    Args:\n",
+    "        cmap (ndarray): RGB Colormap.\n",
+    "    \n",
+    "    Returns:\n",
+    "        (ndarray): Gray Colormap.\n",
+    "    \n",
+    "    \"\"\"\n",
+    "    cmap = plt.cm.get_cmap(cmap)\n",
+    "    colors = cmap(np.arange(cmap.N))\n",
+    "    \n",
+    "    # convert RGBA to perceived greyscale luminance\n",
+    "    # cf. http://alienryderflex.com/hsp.html\n",
+    "    RGB_weight = [0.299, 0.587, 0.114]\n",
+    "    luminance = np.sqrt(np.dot(colors[:, :3] ** 2, RGB_weight))\n",
+    "    colors[:, :3] = luminance[:, np.newaxis]\n",
+    "    \n",
+    "    return cmap.from_list(cmap.name + \"_grayscale\", colors, cmap.N)\n",
+    "\n",
+    "def show_colormap(cmap):\n",
+    "    \"\"\"Plots RGB colormap and grayified colormap\n",
+    "    \n",
+    "    Args: \n",
+    "        cmap (ndarray): Colormap.\n",
+    "    \n",
+    "    \"\"\"\n",
+    "    im = np.outer(np.ones(10), np.arange(100))\n",
+    "    fig, ax = plt.subplots(2, figsize=(6, 1.5),\n",
+    "                           subplot_kw=dict(xticks=[], yticks=[]))\n",
+    "    fig.subplots_adjust(hspace=0.1)\n",
+    "    ax[0].imshow(im, cmap=cmap)\n",
+    "    ax[1].imshow(im, cmap=grayify_cmap(cmap))\n",
+    "    \n",
+    "# printing the jet colormap and how it would look like if printed black and white\n",
+    "show_colormap('jet')\n",
+    "\n",
+    "# doing the same for cube helix\n",
+    "show_colormap('cubehelix')\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "837d7fda",
+   "metadata": {
+    "nbgrader": {
+     "grade": true,
+     "grade_id": "cell-f74443c5ab551eb2",
+     "locked": false,
+     "points": 0,
+     "schema_version": 3,
+     "solution": true,
+     "task": false
+    }
+   },
+   "source": [
+    "As can be seen in the image above, the jet colormap is not linear with respect to the luminance. If a plot that was created using the jet colormap is printed on a black and white printer, weird artifacts occur. One might expect that low values correspond to darker colors and high values correspond to brigter colors, but that is not the case. But the map is also not diverging in the sense that it is bright in the middle and darker towards the edges of the spectrum. Instead, there are two luminance peaks left and right of the middle, which might be really confusing and could create fake \"highlights\" in the data. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b6489ce9",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "hide_input": false,
+  "jupytext": {
+   "text_representation": {
+    "extension": ".Rmd",
+    "format_name": "rmarkdown",
+    "format_version": "1.2",
+    "jupytext_version": "1.13.0"
+   }
+  },
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.7"
+  },
+  "toc": {
+   "base_numbering": 1,
+   "nav_menu": {},
+   "number_sections": true,
+   "sideBar": true,
+   "skip_h1_title": false,
+   "title_cell": "Table of Contents",
+   "title_sidebar": "Contents",
+   "toc_cell": false,
+   "toc_position": {},
+   "toc_section_display": true,
+   "toc_window_display": false
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
